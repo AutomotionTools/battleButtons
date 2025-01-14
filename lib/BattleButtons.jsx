@@ -1,19 +1,19 @@
 /** ====== About Script ===========
-	ScriptUI functions for creating BattleButtons
+ScriptUI functions for creating BattleButtons
 
 -- Created by Rob Barrett (rob-barrett.com), modified from BattleStyle by Adam Plouff (battleaxe.co)
 
-	Licensed under the Apache License, Version 2.0 (the "License");
-	you may not use this file except in compliance with the License.
-	You may obtain a copy of the License at
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
 
-	-- http://www.apache.org/licenses/LICENSE-2.0
+-- http://www.apache.org/licenses/LICENSE-2.0
 
-	Unless required by applicable law or agreed to in writing, software
-	distributed under the License is distributed on an "AS IS" BASIS,
-	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-	See the License for the specific language governing permissions and
-	limitations under the License.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 **/
 
 /*****************************************************************************************************
@@ -46,6 +46,12 @@ buttonHover("buttonExample", buttonExample_BG);
 ******************************************************************************************************/
 
 /*****************************************************************************************************
+
+NEW FEATURES:
+
+- When specifying an array of colors, each color can be defined as an array of color and opacity (expressed as a value of 0 to 1).
+  For example, here this first path will be colored red, at 50% opacity:
+  var buttonColors = [["FF0000",0.5], "FFFFFF"];
 
 MISSING FEATURES:
 
@@ -113,8 +119,18 @@ function vectorButtonDraw() {
         try {
             for (var i = 0; i < this.coord.length; i++) {
                 var line = this.coord[i];
-                var lineColor = (this.color instanceof Array) ? this.color[i] : this.color;
                 var lineAlpha = (this.alpha) ? this.alpha : 1;
+                // If an array of colors is specified:
+                if (this.color instanceof Array) {
+                    var lineColor = this.color[i];
+
+                    // If a specified color is define as an array of color and alpha, utilize this – otherwise utilize the alpha for the icon
+                    lineColor = (lineColor instanceof Array) ? hexToArray(lineColor[0], lineColor[1]) : hexToArray(lineColor, lineAlpha);
+                }
+                // If a single color is specified
+                else {
+                    lineColor = hexToArray(this.color, lineAlpha);
+                }
                 this.graphics.newPath();
                 this.graphics.moveTo(line[0][0], line[0][1]);
 
@@ -122,7 +138,7 @@ function vectorButtonDraw() {
                     this.graphics.lineTo(line[j][0] + (this.size[0] / 2 - this.iconSize[0] / 2),
                     line[j][1] + (this.size[1] / 2 - this.iconSize[1] / 2));
                 }
-                this.graphics.fillPath(this.graphics.newBrush(this.graphics.BrushType.SOLID_COLOR, hexToArray(lineColor, lineAlpha)));
+                this.graphics.fillPath(this.graphics.newBrush(this.graphics.BrushType.SOLID_COLOR, lineColor));
             }
         } catch (e) {
             // Fail silently
