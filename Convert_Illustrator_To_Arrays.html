@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SVG Converter</title>
+    <style>
+        body { padding: 5px 15px; }
+        h1, h2, p, li {
+            font-size: 14px;
+            font-family: Arial, sans-serif;
+            line-height: 130%;
+        }
+        h1 { font-size: 24px; }
+        h2 { font-size: 20px; }
+        div {
+            display: inline-block;
+            padding: 20px;
+            border: solid 1px #CCC;
+            width: 800px;
+            box-sizing: border-box;
+        }
+        input { width: 750px; }
+        textarea {
+            width: 794px;
+            height: 250px;
+        }
+        li + li {
+            margin-top: 10px;
+        }
+        code {
+            font-size: 12px;
+            padding: 2px 5px;
+            background-color: #e7f3f7;
+            border-radius: 4px;
+            color: #1395ce;
+        }
+        #credit { font-size: 12px; }
+        a { color: #1395ce; }
+    </style>
+</head>
+<body>
+
+    <h1 id="color-output">Convert SVG code from Illustrator to vector and color arrays</h1>
+
+    <div>
+        <p><label for="svg-input">Enter the copied SVG code from Adobe Illustrator:</label></p>
+        <p><input type="text" id="svg-input" placeholder="Enter SVG code"></p>
+        <p><button onclick="getArrayOfShapes(); getArrayOfColors()">Convert to Arrays</button></p>
+    </div>
+
+    <h2>Vector Path Array:</h2>
+    <p><textarea id="arraysVector">Vector path array will appear here.</textarea></p>
+
+    <h2>Color Array:</h2>
+    <p><textarea id="arraysColor">Color array will appear here.</textarea></p>
+
+    <div id="instructions">
+        <h2>Instructions:</h2>
+        <p>This tool is for converting copied SVG paths from Adobe Illustrator into arrays for use in the <a href="https://github.com/AutomotionTools/battleButtons" title="BattleButtons on GitHub">BattleButtons toolkit</a>.</p>
+        <ol>
+            <li>In Illustrator, ensure that your icon is made up of straight lines only (BattleButtons doesn't support curved vectors), with fill colors only (no strokes).</li>
+            <li>If the icon should have padding around it, draw a rectangle around the bounds of your icon. This will be excluded from the arrays, but ensures that the padding is observed in the co-ordinates.<br />
+            (If the padding isn't observed after doing this, ensure that this rectangle has a fill color before copying.)</li>
+            <li>Select the icon and the padding rectangle, and copy.</li>
+            <li>Paste the resulting code into the SVG input field above.</li>
+            <li>Copy the resulting vector path array into the variable for your button: <code>var icon = vecToPoints( PASTE_HERE );</code></li>
+            <li>Copy the resulting color array into the variable for your button's colors: <code>var icon_Color = PASTE_HERE;</code></li>
+    </div>
+
+    <p id="credit">&copy; <a href="https://rob-barrett.com" title="Rob Barrett Design">Rob Barrett</a></p>
+
+    <script>
+
+        let arrayOfClasses = [];
+
+        function getArrayOfShapes() {
+
+            const inputString = document.getElementById('svg-input').value;
+
+            // Regex to match class and points attributes for polygons
+            const regex = /<\s*(\w+)\s+class="(cls-\d+)"[^>]*\s+points="([^"]+)"/g;
+
+            // Find all matches
+            let matches;
+            let resultClasses = [];
+            let resultPoints = [];
+
+            // Now, extract class and points from the string
+            while ((matches = regex.exec(inputString)) !== null) {
+                // Only process polygons (because <rect> doesn't have points)
+                if (matches[1] === "polygon") {
+                    resultClasses.push(matches[2]);
+                    resultPoints.push(matches[3]);
+                }
+            }
+
+            arrayOfClasses = resultClasses;
+            var arrayOfShapes = resultPoints.join("\",\n\"");
+                arrayOfShapes = '["' + arrayOfShapes + '"]';
+
+            document.getElementById('arraysVector').value = arrayOfShapes;
+
+        };
+
+        function getArrayOfColors() {
+            
+            const inputString = document.getElementById('svg-input').value;
+            var arrayOfColors = []; // Placeholder for array
+
+            // Regex to match the content inside the <style> tag
+            const styleRegex = /<style.*?>(.*?)<\/style>/s;
+
+            // Apply the regex to the input string
+            const matches = inputString.match(styleRegex);
+
+            // Extract the content of the <style> tag (matches[1] is the captured content)
+            let styleContent = matches[1];
+
+            // Split styleContent by ".c" (can't split by "." because of opacities)
+            styleContent = styleContent.split(".c");
+
+            // Remove the first array item
+            styleContent.shift();
+
+            // Add "c" to the start of each item
+            for (var i = styleContent.length - 1; i >= 0; i--) {
+                styleContent[i] = "c" + styleContent[i];
+            }
+
+            // Loop backwards through the array. If an item ends in a comma, replace that comma with the {} from the next item
+            for (var i = styleContent.length - 1; i >= 0; i--) {
+                var item = styleContent[i];
+                var lastCharacter = item.slice(-1);
+                if (lastCharacter == ",") {
+                    
+                    // Remove the comma
+                    item = item.slice(0, -1);
+
+                    // Get the color/opacity info from the next item
+                    let nextItem = styleContent[i + 1];
+                    let nextInfo = nextItem.split("{");
+                        nextInfo = "{" + nextInfo[1];
+
+                    // Add the next item's color/opacity info to this item
+                    item += nextInfo;
+                    styleContent[i] = item;
+                }
+            }
+
+            // Sort the array alphanumerically
+            styleContent.sort();
+
+            // Loop through the array. Remove the ";}" string, then split each item by the "{" character
+            for (var i = styleContent.length - 1; i >= 0; i--) {
+                var item = styleContent[i];
+                item = item.slice(0, -2);
+                item = item.split("{");
+                styleContent[i] = item;
+            }
+
+            // Loop through the array backwards. If the [0]-index matches that of the next item, append the [1]-index with that of the next item, then remove the next item
+            for (var i = styleContent.length - 2; i >= 0; i--) { // Start from the penultimate item
+                var item = styleContent[i];
+                var itemNext = styleContent[i + 1];
+                if (item[0] == itemNext[0]) {
+                    item[1] += "," + itemNext[1]
+                    styleContent.splice(i + 1, 1); // Remove the next item
+                }
+                styleContent[i] = item;
+            }
+
+            // Loop through the array. Split the [1]-index by "," or ";"
+            for (var i = styleContent.length - 1; i >= 0; i--) {
+                var item = styleContent[i];
+                var contents = item[1];
+                    contents = contents.split(/[;,]/g);
+
+                // Remove "fill:" from the first item of the contents
+                contents[0] = contents[0].slice(5);
+                // Convert named colors to hex values
+                contents[0] = standardize_color(contents[0]);
+                // Remove "opacity:" from the second item of the contents
+                if (contents.length > 1) contents[1] = contents[1].slice(8);
+
+                item[1] = contents;
+                styleContent[i] = item;
+            };          
+
+            // Run through the arrayOfClasses and find the matching class in styleContent. When a match is found, add that style to arrayOfColors
+            arrayOfClasses.forEach(cls => {
+                // Find the corresponding style from styleContent
+                let match = styleContent.find(item => item[0] === cls);
+                if (match) {
+                    var thisStyle = match[1];
+
+                    if (thisStyle.length == 1) {
+                        thisStyle = '"' + thisStyle[0].toUpperCase() + '"';
+                    } else {
+                        thisStyle = '["' + thisStyle[0].toUpperCase() + '", ' + thisStyle[1] + ']';
+                    }
+                    arrayOfColors.push(thisStyle);
+                }
+            });
+
+            // Loop through arrayOfColors. If all items match, keep only the first
+            var allItemsMatch = true;
+            for (var i = 0; i < arrayOfColors.length - 1; i++) {
+                var item = arrayOfColors[i];
+                var itemNext = arrayOfColors[i + 1];
+                if (item !== itemNext) allItemsMatch = false;
+            }
+            if (allItemsMatch) arrayOfColors = [arrayOfColors[0]];
+            
+            arrayOfColors = "[" + arrayOfColors.join(", ") + "]";
+            document.getElementById('arraysColor').value = arrayOfColors;
+        }
+
+        // Function to convert a named color to its hex value
+        function standardize_color(str){
+            let ctx = document.createElement('canvas').getContext('2d');
+            ctx.fillStyle = str;
+            return ctx.fillStyle;
+        }
+    </script>
+
+</body>
+</html>
