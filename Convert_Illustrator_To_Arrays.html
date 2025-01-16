@@ -20,14 +20,15 @@
             width: 800px;
             box-sizing: border-box;
         }
-        input { width: 750px; }
         textarea {
             width: 794px;
             height: 250px;
         }
-        li + li {
-            margin-top: 10px;
+        #input textarea {
+            width: 752px;
+            height: 100px;
         }
+        li + li { margin-top: 10px; }
         code {
             font-size: 12px;
             padding: 2px 5px;
@@ -43,9 +44,9 @@
 
     <h1 id="color-output">Convert SVG code from Illustrator to vector and color arrays</h1>
 
-    <div>
+    <div id="input">
         <p><label for="svg-input">Enter the copied SVG code from Adobe Illustrator:</label></p>
-        <p><input type="text" id="svg-input" placeholder="Enter SVG code"></p>
+        <p><textarea id="svg-input" placeholder="Enter SVG code"></textarea></p>
         <p><button onclick="getArrayOfShapes(); getArrayOfColors()">Convert to Arrays</button></p>
     </div>
 
@@ -64,8 +65,13 @@
             (If the padding isn't observed after doing this, ensure that this rectangle has a fill color before copying.)</li>
             <li>Select the icon and the padding rectangle, and copy.</li>
             <li>Paste the resulting code into the SVG input field above.</li>
-            <li>Copy the resulting vector path array into the variable for your button: <code>var icon = vecToPoints( PASTE_HERE );</code></li>
-            <li>Copy the resulting color array into the variable for your button's colors: <code>var icon_Color = PASTE_HERE;</code></li>
+            <li>Copy the generated vector path array into the variable for your button: <code>var icon = vecToPoints( PASTE_HERE );</code></li>
+            <li>Copy the generated color array into the variable for your button's colors: <code>var icon_Color = PASTE_HERE;</code></li>
+        </ol>
+        <h2>Limitations:</h2>
+        <ul>
+            <li>If all paths copied from Illustrator are pure black (i.e. using the color code <code>#000000</code>), this tool will quietly fail. The current workaround is to re-color one or all of these paths, and then replace the value in the generated color array.</li>
+        </ul>
     </div>
 
     <p id="credit">&copy; <a href="https://rob-barrett.com" title="Rob Barrett Design">Rob Barrett</a></p>
@@ -76,7 +82,8 @@
 
         function getArrayOfShapes() {
 
-            const inputString = document.getElementById('svg-input').value;
+            let inputString = document.getElementById('svg-input').value;
+                inputString = removeBreaksAndSpaces(inputString);
 
             // Regex to match class and points attributes for polygons
             const regex = /<\s*(\w+)\s+class="(cls-\d+)"[^>]*\s+points="([^"]+)"/g;
@@ -96,17 +103,39 @@
             }
 
             arrayOfClasses = resultClasses;
-            var arrayOfShapes = resultPoints.join("\",\n\"");
+            let arrayOfShapes = resultPoints.join("\",\n\"");
                 arrayOfShapes = '["' + arrayOfShapes + '"]';
 
             document.getElementById('arraysVector').value = arrayOfShapes;
-
         };
+
+        function removeBreaksAndSpaces(str) {
+            
+            // Split by line-break into an array
+            str = str.split(/\r?\n|\r|\n/g);
+
+            // Trim whitespace from each array item
+            for (let i = 0; i < str.length; i++) {
+                str[i] = str[i].trim();
+            }
+
+            // Rejoin the array
+            str = str.join("");
+            
+            return str;
+        }
 
         function getArrayOfColors() {
             
-            const inputString = document.getElementById('svg-input').value;
-            var arrayOfColors = []; // Placeholder for array
+            let inputString = document.getElementById('svg-input').value;
+                inputString = removeBreaksAndSpaces(inputString);
+
+            // Remove any spaces before "{fill" or "{opacity" – this is required for Windows
+            inputString = inputString.replace(/ {fill/g, '{fill');
+            inputString = inputString.replace(/ {opacity/g, '{opacity');
+
+            // Placeholder for array
+            let arrayOfColors = [];
 
             // Regex to match the content inside the <style> tag
             const styleRegex = /<style.*?>(.*?)<\/style>/s;
@@ -124,14 +153,14 @@
             styleContent.shift();
 
             // Add "c" to the start of each item
-            for (var i = styleContent.length - 1; i >= 0; i--) {
+            for (let i = styleContent.length - 1; i >= 0; i--) {
                 styleContent[i] = "c" + styleContent[i];
             }
 
             // Loop backwards through the array. If an item ends in a comma, replace that comma with the {} from the next item
-            for (var i = styleContent.length - 1; i >= 0; i--) {
-                var item = styleContent[i];
-                var lastCharacter = item.slice(-1);
+            for (let i = styleContent.length - 1; i >= 0; i--) {
+                let item = styleContent[i];
+                let lastCharacter = item.slice(-1);
                 if (lastCharacter == ",") {
                     
                     // Remove the comma
@@ -152,17 +181,17 @@
             styleContent.sort();
 
             // Loop through the array. Remove the ";}" string, then split each item by the "{" character
-            for (var i = styleContent.length - 1; i >= 0; i--) {
-                var item = styleContent[i];
+            for (let i = styleContent.length - 1; i >= 0; i--) {
+                let item = styleContent[i];
                 item = item.slice(0, -2);
                 item = item.split("{");
                 styleContent[i] = item;
             }
 
             // Loop through the array backwards. If the [0]-index matches that of the next item, append the [1]-index with that of the next item, then remove the next item
-            for (var i = styleContent.length - 2; i >= 0; i--) { // Start from the penultimate item
-                var item = styleContent[i];
-                var itemNext = styleContent[i + 1];
+            for (let i = styleContent.length - 2; i >= 0; i--) { // Start from the penultimate item
+                let item = styleContent[i];
+                let itemNext = styleContent[i + 1];
                 if (item[0] == itemNext[0]) {
                     item[1] += "," + itemNext[1]
                     styleContent.splice(i + 1, 1); // Remove the next item
@@ -171,9 +200,9 @@
             }
 
             // Loop through the array. Split the [1]-index by "," or ";"
-            for (var i = styleContent.length - 1; i >= 0; i--) {
-                var item = styleContent[i];
-                var contents = item[1];
+            for (let i = styleContent.length - 1; i >= 0; i--) {
+                let item = styleContent[i];
+                let contents = item[1];
                     contents = contents.split(/[;,]/g);
 
                 // Remove "fill:" from the first item of the contents
@@ -192,7 +221,7 @@
                 // Find the corresponding style from styleContent
                 let match = styleContent.find(item => item[0] === cls);
                 if (match) {
-                    var thisStyle = match[1];
+                    let thisStyle = match[1];
 
                     if (thisStyle.length == 1) {
                         thisStyle = '"' + thisStyle[0].toUpperCase() + '"';
@@ -204,16 +233,17 @@
             });
 
             // Loop through arrayOfColors. If all items match, keep only the first
-            var allItemsMatch = true;
-            for (var i = 0; i < arrayOfColors.length - 1; i++) {
-                var item = arrayOfColors[i];
-                var itemNext = arrayOfColors[i + 1];
+            let allItemsMatch = true;
+            for (let i = 0; i < arrayOfColors.length - 1; i++) {
+                let item = arrayOfColors[i];
+                let itemNext = arrayOfColors[i + 1];
                 if (item !== itemNext) allItemsMatch = false;
             }
             if (allItemsMatch) arrayOfColors = [arrayOfColors[0]];
             
             arrayOfColors = "[" + arrayOfColors.join(", ") + "]";
             document.getElementById('arraysColor').value = arrayOfColors;
+            
         }
 
         // Function to convert a named color to its hex value
