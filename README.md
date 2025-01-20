@@ -48,7 +48,7 @@ var icon_Color = PASTE_COLOR_ARRAY_HERE;
 
 ## Testing UI Background Appearance
 
-In the **`BattleButtonsTest.jsx`** file, you can use values of the `backgroundColor` object to change the background color to match that of the legacy (pre-2025) UI, or the 'Darkest'/'Dark'/'Light' colour schemes of the new Spectrum UI.
+In the **`BattleButtonsTest.jsx`** file, you can use values of the `backgroundColor` object to change the background color to match that of the legacy (pre-2025) UI, or the 'Darkest'/'Dark'/'Light' color schemes of the new Spectrum UI.
 
 ```
 var backgroundColor = {
