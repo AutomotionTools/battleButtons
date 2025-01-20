@@ -37,7 +37,7 @@ Each 'button' in the UI is a group containing a number of button elements which 
 
 ## Coordinates and Colors
 
-Use the '**Convert_Illustrator_To_Arrays.html**' page in this toolkit to convert vector icons from Adobe Illustrator into compatible arrays. The HTML page contains further instructions on how to do this.
+Use the **`Convert_Illustrator_To_Arrays.html`** page in this toolkit to convert vector icons from Adobe Illustrator into compatible arrays. The HTML page contains further instructions on how to do this.
 
 Once converted, use these arrays to define your icons:
 
@@ -46,6 +46,23 @@ var icon = vecToPoints( PASTE_VECTOR_PATH_ARRAY_HERE );
 var icon_Color = PASTE_COLOR_ARRAY_HERE;
 ```
 
+## Testing UI Background Appearance
+
+In the **`BattleButtonsTest.jsx`** file, you can use values of the `backgroundColor` object to change the background color to match that of the legacy (pre-2025) UI, or the 'Darkest'/'Dark'/'Light' colour schemes of the new Spectrum UI.
+
+```
+var backgroundColor = {
+  "legacy" : "272727",
+  "darkest" : "1D1D1D",
+  "dark" : "323232",
+  "light" : "F8F8F8"
+};
+setBackgroundColor(
+  win, // group
+  backgroundColor.darkest, // color
+  1 // alpha
+);
+```
 
 ## Issues
 When toggle buttons are clicked, the hover background does not remain visible - it only shows again when the mouse is moved. (When the button visibility changes, this is registered as a 'mouseout' on the button's group.)
