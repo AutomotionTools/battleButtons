@@ -46,6 +46,8 @@ var icon = vecToPoints( PASTE_VECTOR_PATH_ARRAY_HERE );
 var icon_Color = PASTE_COLOR_ARRAY_HERE;
 ```
 
+https://github.com/user-attachments/assets/be36f6e1-707e-4e2e-9abb-4a9474822a42
+
 ## Testing UI Background Appearance
 
 In the **`BattleButtonsTest.jsx`** file, you can use values of the `backgroundColor` object to change the background color to match that of the legacy (pre-2025) UI, or the 'Darkest'/'Dark'/'Light' color schemes of the new Spectrum UI.
