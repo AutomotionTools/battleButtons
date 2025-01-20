@@ -50,10 +50,10 @@
         <p><button onclick="getArrayOfShapes(); getArrayOfColors()">Convert to Arrays</button></p>
     </div>
 
-    <h2>Vector Path Array:</h2>
+    <h2>Vector Path Array <button onclick="copyToClipboard('arraysVector')">Copy to clipboard</button></h2>
     <p><textarea id="arraysVector">Vector path array will appear here.</textarea></p>
 
-    <h2>Color Array:</h2>
+    <h2>Color Array <button onclick="copyToClipboard('arraysColor')">Copy to clipboard</button></h2>
     <p><textarea id="arraysColor">Color array will appear here.</textarea></p>
 
     <div id="instructions">
@@ -103,8 +103,8 @@
             }
 
             arrayOfClasses = resultClasses;
-            let arrayOfShapes = resultPoints.join("\",\n\"");
-                arrayOfShapes = '["' + arrayOfShapes + '"]';
+            let arrayOfShapes = resultPoints.join("\",\n\t\"");
+                arrayOfShapes = 'vecToPoints([\n\t"' + arrayOfShapes + '"\n\t]);';
 
             document.getElementById('arraysVector').value = arrayOfShapes;
         };
@@ -241,7 +241,7 @@
             }
             if (allItemsMatch) arrayOfColors = [arrayOfColors[0]];
             
-            arrayOfColors = "[" + arrayOfColors.join(", ") + "]";
+            arrayOfColors = "[" + arrayOfColors.join(", ") + "];";
             document.getElementById('arraysColor').value = arrayOfColors;
             
         }
@@ -251,6 +251,19 @@
             let ctx = document.createElement('canvas').getContext('2d');
             ctx.fillStyle = str;
             return ctx.fillStyle;
+        }
+
+        // Function to copy text to the clipboard
+        function copyToClipboard(input_id) {
+            
+            var copyText = document.getElementById(input_id);
+
+            // Select the text field
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); // For mobile devices
+
+            // Copy the text inside the text field
+            navigator.clipboard.writeText(copyText.value);    
         }
     </script>
 
