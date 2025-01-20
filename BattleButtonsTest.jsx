@@ -16,9 +16,16 @@
     win.alignChildren = ["center", "center"];
     win.spacing = 0;
     win.margins = 20;
+
+    var backgroundColor = {
+        "legacy" : "272727",
+        "darkest" : "1D1D1D",
+        "dark" : "323232",
+        "light" : "F8F8F8"
+    };
     setBackgroundColor(
         win, // group
-        "101010", // color
+        backgroundColor.darkest, // color
         1 // alpha
     );
 
