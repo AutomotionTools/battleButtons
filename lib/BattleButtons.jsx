@@ -53,6 +53,9 @@ NEW FEATURES:
   For example, here this first path will be colored red, at 50% opacity:
   var buttonColors = [["FF0000",0.5], "FFFFFF"];
 
+- The appearanceColors() function can be used to select between a number of color arrays, determined by the appearance of the
+  After Effects UI.
+
 MISSING FEATURES:
 
 - When toggle buttons are clicked, the hover background does not remain visible - it only shows again
@@ -148,7 +151,7 @@ function vectorButtonDraw() {
 
 /** Draw a colored icon button - returns a button object
 @param {parentGroup} - object - ScriptUI panel or group
-@param {iconVec} - array of strings - SVG coords as string
+@param {iconVec} - array of strings - SVG co-ordinates as string
 @param {iconColor} - string, or array of strings - of hex colors for each of the above SVG paths. An array with a single value will use that value for all paths
 @param {iconSize} - array - size of the icon artwork
 @param {iconAlpha} - string - alpha value for icon color(s)
@@ -220,7 +223,7 @@ function roundedRectVertices(size, radius) {
 
 /** Draw a square with rounded corners - returns a button object
 @param {parentGroup} - object - ScriptUI panel or group
-@param {iconVec} - array of strings - SVG coords as string
+@param {iconVec} - array of strings - SVG co-ordinates as string
 @param {iconSize} - array - size of the icon artwork
 @param {iconColor} - string - icon color when static
 @param {iconAlpha} - string - alpha value for icon color(s)
@@ -354,3 +357,28 @@ function buttonHover(button, button_Group, button_BG, button_Hover) {
         button_BG.visible = false;
     });
 }
+
+/** Swap color palette for icons based on After Effects' UI appearance
+@param {darkest} - array - color scheme for the 'Darkest' appearance, and the default color scheme if another isn't defined (required)
+@param {dark} - array - color scheme for the 'Dark' appearance (optional)
+@param {light} - array - color scheme for the 'Light' appearance (optional)
+@param {legacy} - array - color scheme for versions of After Effects before CC 2025 (optional)
+*/
+function appearanceColors(darkest, dark, light, legacy) {
+    // Check for AE theme (if AE 2025 or over)
+    var appTheme = app.getAppTheme; // light, dark, darkest
+    if (appTheme !== undefined) {
+        if (appTheme === "dark" && dark) {
+            iconColors = dark;
+        }
+        else if (appTheme === "light" && light) {
+            iconColors = light;
+        }
+        else {
+            iconColors = darkest;
+        }
+    } else {
+        iconColors = (legacy) ? legacy : darkest;
+    }
+    return iconColors;
+};
