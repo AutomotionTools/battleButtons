@@ -245,21 +245,41 @@ function vectorBox(parentGroup, iconVec, iconColor, iconSize, iconAlpha) {
 @param {buttonShift} - object - button object (optional: replace with null if not used)
 @param {buttonAltCtrl} - object - button object (optional: replace with null if not used)
 @param {buttonAltShift} - object - button object (optional: replace with null if not used)
+@param {buttonCtrlShift} - object - button object (optional: replace with null if not used)
 @param {buttonAltCtrlShift} - object - button object (optional: replace with null if not used)
 */
-function buttonSwap(button, buttonAlt, buttonCtrl, buttonShift, buttonAltCtrl, buttonAltShift, buttonAltCtrlShift) {
-    if (buttonAlt && k.altKey && !k.ctrlKey && !k.shiftKey) {
-        button.visible = false;
-        buttonAlt.visible = true;
+function buttonSwap(button, buttonAlt, buttonCtrl, buttonShift, buttonAltCtrl, buttonAltShift, buttonCtrlShift, buttonAltCtrlShift) {
+
+    var buttonsArray = [button, buttonAlt, buttonCtrl, buttonShift, buttonAltCtrl, buttonAltShift, buttonCtrlShift, buttonAltCtrlShift];
+
+    if (buttonAltCtrlShift && k.altKey && k.ctrlKey && k.shiftKey) {
+        var buttonActive = buttonAltCtrlShift;
+    }
+    else if (buttonCtrlShift && !k.altKey && k.ctrlKey && k.shiftKey) {
+        buttonActive = buttonCtrlShift;
+    }
+    else if (buttonAltShift && k.altKey && !k.ctrlKey && k.shiftKey) {
+        buttonActive = buttonAltShift;
+    }
+    else if (buttonAltCtrl && k.altKey && k.ctrlKey && !k.shiftKey) {
+        buttonActive = buttonAltCtrl;
+    }
+    else if (buttonAlt && k.altKey && !k.ctrlKey && !k.shiftKey) {
+        buttonActive = buttonAlt;
     }
     else if (buttonCtrl && !k.altKey && k.ctrlKey && !k.shiftKey) {
-        button.visible = false;
-        buttonCtrl.visible = true;
+        buttonActive = buttonCtrl;
+    }
+    else if (buttonShift && !k.altKey && !k.ctrlKey && k.shiftKey) {
+        buttonActive = buttonShift;
     }
     else {
-        button.visible = true;
-        if (buttonAlt) buttonAlt.visible = false;
-        if (buttonCtrl) buttonCtrl.visible = false;
+        buttonActive = button;
+    }
+
+    for (var i = 0; i < buttonsArray.length; i++) {
+        var thisButton = buttonsArray[i];
+        if (thisButton) thisButton.visible = (thisButton === buttonActive) ? true : false;
     }
 }
 
@@ -363,16 +383,20 @@ function buttonHover(button, button_Group, button_BG, button_Hover) {
 @param {dark} - array - color scheme for the 'Dark' appearance (optional)
 @param {light} - array - color scheme for the 'Light' appearance (optional)
 @param {legacy} - array - color scheme for versions of After Effects before CC 2025 (optional)
+@param {testMode} - string - set to 'darkest', 'dark', 'light' or 'legacy' to set icon colors regardless of AE's appearance settings
 */
-function appearanceColors(darkest, dark, light, legacy) {
+function appearanceColors(darkest, dark, light, legacy, testMode) {
     // Check for AE theme (if AE 2025 or over)
     var appTheme = app.getAppTheme; // light, dark, darkest
     if (appTheme !== undefined) {
-        if (appTheme === "dark" && dark) {
+        if ((appTheme === "dark" || testMode == "dark") && dark) {
             iconColors = dark;
         }
-        else if (appTheme === "light" && light) {
+        else if ((appTheme === "light" || testMode === "light") && light) {
             iconColors = light;
+        }
+        else if (testMode === "legacy") {
+            iconColors = legacy;
         }
         else {
             iconColors = darkest;
