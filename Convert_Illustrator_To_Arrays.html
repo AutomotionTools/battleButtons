@@ -36,6 +36,9 @@
             border-radius: 4px;
             color: #1395ce;
         }
+        .buttonMain {
+            padding: 15px;
+        }
         #credit { font-size: 12px; }
         a { color: #1395ce; }
     </style>
@@ -46,28 +49,35 @@
 
     <div id="input">
         <p><label for="svg-input">Enter the copied SVG code from Adobe Illustrator:</label></p>
-        <p><textarea id="svg-input" placeholder="Enter SVG code"></textarea></p>
-        <p><button onclick="getArrayOfShapes(); getArrayOfColors()">Convert to Arrays</button></p>
+        <p><textarea id="svg-input" placeholder="Paste SVG code from Illustrator here"></textarea></p>
+        <p><button onclick="getArrayOfShapes(); getArrayOfColors()" class="buttonMain">Convert to Arrays</button> &nbsp;<button onclick="clearFields()">Clear</button></p>
     </div>
 
     <h2>Vector Path Array <button onclick="copyToClipboard('arraysVector')">Copy to clipboard</button></h2>
-    <p><textarea id="arraysVector">Vector path array will appear here.</textarea></p>
+    <p><textarea id="arraysVector" placeholder="Vector path array will appear here."></textarea></p>
 
     <h2>Color Array <button onclick="copyToClipboard('arraysColor')">Copy to clipboard</button></h2>
-    <p><textarea id="arraysColor">Color array will appear here.</textarea></p>
+    <p><textarea id="arraysColor" placeholder="Color array will appear here."></textarea></p>
 
     <div id="instructions">
         <h2>Instructions:</h2>
         <p>This tool is for converting copied SVG paths from Adobe Illustrator into arrays for use in the <a href="https://github.com/AutomotionTools/battleButtons" title="BattleButtons on GitHub">BattleButtons toolkit</a>.</p>
         <ol>
             <li>In Illustrator, ensure that your icon is made up of straight lines only (BattleButtons doesn't support curved vectors), with fill colors only (no strokes).</li>
-            <li>If the icon should have padding around it, draw a rectangle around the bounds of your icon. This will be excluded from the arrays, but ensures that the padding is observed in the co-ordinates.<br />
+            <li>If the icon should have padding around it, draw a rectangle around the bounds of your icon (using the Rectangle&nbsp;Tool). This will be excluded from the arrays, but ensures that the padding is observed in the co-ordinates.<br />
             (If the padding isn't observed after doing this, ensure that this rectangle has a fill color before copying.)</li>
-            <li>Select the icon and the padding rectangle, and copy.</li>
+            <li>Select the icon and the padding rectangle, and then copy.</li>
             <li>Paste the resulting code into the SVG input field above.</li>
-            <li>Copy the generated vector path array into the variable for your button: <code>var icon = vecToPoints( PASTE_HERE );</code></li>
-            <li>Copy the generated color array into the variable for your button's colors: <code>var icon_Color = PASTE_HERE;</code></li>
+            <li>Copy the generated vector path array to the variable for your button: <code>var icon = PASTE_HERE;</code></li>
+            <li>Copy the generated color array to the variable for your button's colors: <code>var icon_Color = PASTE_HERE;</code></li>
         </ol>
+        <h2>Common issues</h2>
+        <ul>
+            <li>If your illustration contains any compound paths, they will not get converted. Ensure that you release these paths before copying.</li>
+            <li>Each of the shapes within your illustration must be a single path &ndash; this means that you can't have cut-outs (for example, the center of the letter 'O'). To resolve this, you can split your shape into multiple paths, or create a hairline gap between the centre and edge of the shape.</li>
+            <li>If you have any squares or rectangles in your shape, Illustrator will process these differently and they won't get converted. You can resolve this by adding an additional vertex point anywhere along the shape's path.</li>
+            <li>Ensure that the bottom-most rectangle in your icon selection is a 'Rectangle' (drawn with the Rectangle&nbsp;Tool), rather than a rectangular path. The correct type will have a highlighted center point when selected in Illustrator.</li>
+        </ul>
         <h2>Limitations:</h2>
         <ul>
             <li>If all paths copied from Illustrator are pure black (i.e. using the color code <code>#000000</code>), this tool will quietly fail. The current workaround is to re-color one or all of these paths, and then replace the value in the generated color array.</li>
@@ -264,6 +274,13 @@
 
             // Copy the text inside the text field
             navigator.clipboard.writeText(copyText.value);    
+        }
+
+        // Function to empty all textareas
+        function clearFields() {
+            document.getElementById('svg-input').value = "";
+            document.getElementById('arraysVector').value = "";
+            document.getElementById('arraysColor').value = "";
         }
     </script>
 
