@@ -1,5 +1,5 @@
 // Encapsulate the script in a function to avoid global variables
-(function (thisObj) {
+(function (thisObj) { 
 
     // Minified json2.js by Douglas Crockford
     // 2023-05-10 - Public Domain
