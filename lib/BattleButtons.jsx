@@ -55,6 +55,19 @@ NEW FEATURES:
 - The issue with the hover background not remaining visible when toggle buttons are clicked has been fixed.
   No code changes should be required by the user for this to work.
 
+- Icon example structure changed to use objects instead of a series of arrays.
+  This will break existing code, so ensure that icons are updated to use this new structure:
+
+  iconName.icon // The default icon
+  iconName.colors // The default colors
+  iconName.[state].icon // The icon for a state (this could be "hover", "alt" or "altshift", for example)
+  iconName.[state].colors // The colors for the state. If not defined, the default colors will be used.
+  iconName.colors.darkest,
+  iconName.colors.dark,
+  iconName.colors.light,
+  iconName.colors.legacy // Optional colors for specific After Effects UI appearances. Any not defined will use the default colors.
+  iconName.colors = appearanceColors(iconName); // If specifying any appearance colors as above, include this function as the last defined color, even if you've already defined iconName.colors.
+
 /*****************************************************************************************************
 
 
@@ -388,24 +401,46 @@ function buttonHover(button, button_Group, button_BG, button_Hover) {
 @param {legacy} - array - color scheme for versions of After Effects before CC 2025 (optional)
 @param {testMode} - string - set to 'darkest', 'dark', 'light' or 'legacy' to set icon colors regardless of AE's appearance settings
 */
-function appearanceColors(darkest, dark, light, legacy, testMode) {
+function appearanceColors(icon, testMode) {
     // Check for AE theme (if AE 2025 or over)
     var appTheme = app.getAppTheme; // light, dark, darkest
     if (appTheme !== undefined) {
-        if ((appTheme === "dark" || testMode == "dark") && dark) {
-            iconColors = dark;
+        if ((appTheme === "dark" || testMode == "dark") && icon.colors.dark) {
+            iconColors = icon.colors.dark;
         }
-        else if ((appTheme === "light" || testMode === "light") && light) {
-            iconColors = light;
+        else if ((appTheme === "light" || testMode === "light") && icon.colors.light) {
+            iconColors = icon.colors.light;
         }
-        else if (testMode === "legacy") {
-            iconColors = legacy;
+        else if (testMode === "legacy" && icon.colors.legacy) {
+            iconColors = icon.colors.legacy;
+        }
+        else if (icon.colors.darkest) {
+            iconColors = icon.colors.darkest;
+        }
+        else if (icon.colors) {
+            iconColors = icon.colors;
         }
         else {
-            iconColors = darkest;
+            iconColors = ["FFFFFF"];
         }
     } else {
-        iconColors = (legacy) ? legacy : darkest;
+        if (icon.colors.legacy) {
+            iconColors = icon.colors.legacy;
+        }
+        else if (icon.colors) {
+            iconColors = icon.colors;
+        }
+        else if (icon.colors.darkest) {
+            iconColors = icon.colors.darkest;
+        }
+        else if (icon.colors.dark) {
+            iconColors = icon.colors.dark;
+        }
+        else if (icon.colors.light) {
+            iconColors = icon.colors.light;
+        } else {
+            iconColors = ["FFFFFF"];
+        }
     }
     return iconColors;
 };
