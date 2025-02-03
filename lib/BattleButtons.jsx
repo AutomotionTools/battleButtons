@@ -49,18 +49,11 @@ buttonHover("buttonExample", buttonExample_BG);
 
 NEW FEATURES:
 
-- When specifying an array of colors, each color can be defined as an array of color and opacity (expressed as a value of 0 to 1).
-  For example, here this first path will be colored red, at 50% opacity:
-  var buttonColors = [["FF0000",0.5], "FFFFFF"];
+- The color arrays are now more robust: If the number of colors specified doesn't match the number of paths,
+  the last-defined color will be used for the remainder of paths that don't have assigned colors.
 
-- The appearanceColors() function can be used to select between a number of color arrays, determined by the appearance of the
-  After Effects UI.
-
-MISSING FEATURES:
-
-- When toggle buttons are clicked, the hover background does not remain visible - it only shows again
-  when the mouse is moved. (When the button visibility changes, this is registered as a 'mouseout' on
-  the button's group.)
+- The issue with the hover background not remaining visible when toggle buttons are clicked has been fixed.
+  No code changes should be required by the user for this to work.
 
 /*****************************************************************************************************
 
@@ -109,10 +102,10 @@ function vecToPoints(vecCoord) {
 // Create the vector button
 function vectorButtonDraw() {
 
-    // If the color array contains only one value, use this for all paths
-    if (this.color instanceof Array && this.color.length == 1) {
-        for (var i = 1; i < this.coord.length; i++) {
-            this.color.push(this.color[0]);
+    // If the color array contains fewer than the required number of values, use the last defined value for all missing ones
+    if (this.color instanceof Array && this.color.length < this.coord.length) {
+        for (var i = this.color.length - 1; i < this.coord.length; i++) {
+            this.color.push(this.color[this.color.length - 1]);
         }
     }
 
@@ -362,6 +355,12 @@ function groupClick(groupName) {
 */
 function buttonHover(button, button_Group, button_BG, button_Hover) {
 
+    var toggleClick;
+
+    button_Group.addEventListener("mousedown", function() {
+        toggleClick = true;
+        button_BG.visible = true;
+    });
     button_Group.addEventListener("mouseover", function () {
         if (button_Hover) {
             button.visible = false;
@@ -374,7 +373,11 @@ function buttonHover(button, button_Group, button_BG, button_Hover) {
             button.visible = true;
             button_Hover.visible = false;
         };
-        button_BG.visible = false;
+        if (toggleClick) {
+            toggleClick = false;
+        } else {
+            button_BG.visible = false;
+        }
     });
 }
 
